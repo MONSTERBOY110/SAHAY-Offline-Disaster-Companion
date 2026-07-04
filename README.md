@@ -115,7 +115,3 @@ Functionality, Presentation):
 - SAHAY gives standard first-aid guidance (IFRC/WHO-style) and always directs users
   to professional care (112/108) the moment networks return. It is a companion, not
   a doctor.
-
-## License
-
-MIT, see [LICENSE](LICENSE).
