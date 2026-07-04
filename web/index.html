@@ -2,87 +2,130 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>সহায় SAHAY · offline disaster companion</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b1220'/%3E%3Ccircle cx='50' cy='50' r='26' fill='none' stroke='%23ff6b2c' stroke-width='9'/%3E%3Ccircle cx='50' cy='50' r='7' fill='%2337d67a'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23161418'/%3E%3Ccircle cx='50' cy='50' r='27' fill='none' stroke='%23d98a4e' stroke-width='8'/%3E%3Ccircle cx='50' cy='50' r='8' fill='%23d98a4e'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-<header class="truthbar">
-  <div class="brand">
-    <span class="brand-bn">সহায়</span>
-    <span class="brand-en">SAHAY · offline disaster companion</span>
-  </div>
-  <div class="lights">
-    <div class="light" id="net-light">
-      <span class="dot dot-red"></span>
-      <span class="light-label">NETWORK <b id="net-state">CHECKING…</b></span>
-    </div>
-    <div class="light" id="gemma-light">
-      <span class="dot dot-green"></span>
-      <span class="light-label">GEMMA 4 <b id="gemma-state">LOCAL</b></span>
-    </div>
-  </div>
-</header>
+<div class="app">
 
-<main class="layout">
-  <section class="chat-pane">
-    <div class="chat-scroll" id="chat">
-      <div class="msg sahay">
-        <div class="msg-body">
-          <p><strong>আমি সহায়। নেটওয়ার্ক না থাকলেও আমি আছি।</strong></p>
+  <aside class="sidebar">
+    <div class="side-brand">
+      <span class="mark" aria-hidden="true"><span class="mark-ring"></span><span class="mark-core"></span></span>
+      <span class="side-brand-text">
+        <span class="side-brand-bn">সহায়</span>
+        <span class="side-brand-en">SAHAY</span>
+      </span>
+    </div>
+
+    <div class="side-scroll">
+      <section class="side-block">
+        <p class="side-label">STATUS</p>
+        <div class="readout" id="net-readout" data-state="down" role="status" aria-live="polite">
+          <span class="readout-graph" aria-hidden="true">
+            <svg viewBox="0 0 72 20" preserveAspectRatio="none">
+              <path class="net-flat" d="M0 10 H72" />
+              <path class="net-live" d="M0 10 H24 L29 3 L34 17 L39 10 H72" />
+            </svg>
+          </span>
+          <span class="readout-name">Network</span>
+          <b id="net-state" class="readout-value">CHECKING</b>
+        </div>
+        <div class="readout" id="gemma-readout">
+          <span class="readout-graph" aria-hidden="true">
+            <svg viewBox="0 0 72 20" preserveAspectRatio="none">
+              <path class="beat-line" d="M0 10 H20 L24 10 L28 2 L33 18 L38 10 L42 7 L46 10 H72" />
+            </svg>
+          </span>
+          <span class="readout-name">Gemma 4</span>
+          <b id="gemma-state" class="readout-value beacon">LOCAL</b>
+        </div>
+      </section>
+
+      <section class="side-block">
+        <p class="side-label">SOS OUTBOX</p>
+        <div id="outbox-list" class="panel-body">
+          <p class="empty">বিপদে বললেই আমি বার্তা তৈরি রাখব। No SOS queued yet.</p>
+        </div>
+      </section>
+
+      <section class="side-block">
+        <p class="side-label">FAMILY BOARD</p>
+        <div id="family-list" class="panel-body">
+          <p class="empty">কেউ নিরাপদ বা নিখোঁজ জানালে এখানে দেখা যাবে।</p>
+        </div>
+      </section>
+
+      <section class="side-block">
+        <p class="side-label">SHELTERS</p>
+        <div id="shelter-list" class="panel-body">
+          <p class="empty">এলাকা বললে কাছের আশ্রয়কেন্দ্র খুঁজে দেব।</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="side-foot">
+      <span class="foot-dot" aria-hidden="true"></span>
+      <span class="foot-text">
+        <b>On-device · offline</b>
+        <span>ইন্টারনেট লাগে না</span>
+      </span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="glow" aria-hidden="true"></div>
+
+    <div class="chat" id="chat">
+      <div class="msg sahay intro">
+        <span class="avatar av-sahay" aria-hidden="true">স</span>
+        <div class="bubble">
+          <p class="lede">আমি সহায়। নেটওয়ার্ক না থাকলেও আমি আছি।</p>
           <p>বিপদে বলুন বা লিখুন, বাংলা বা English। ছবি তুলে পাঠান (আঘাত, ওষুধ, ক্ষয়ক্ষতি)। আমি প্রাথমিক চিকিৎসা বলব, আশ্রয়কেন্দ্র খুঁজব, SOS বার্তা তৈরি রাখব।</p>
-          <p class="dim">I'm SAHAY, here even when the network is not. Speak or type in Bengali or English. Share a photo of an injury, medicine, or damage.</p>
+          <p class="sub">I am SAHAY, here even when the network is not. Speak or type in Bengali or English. Share a photo of an injury, a medicine, or damage.</p>
         </div>
       </div>
     </div>
 
-    <div class="quick-row" id="quick-row">
-      <button class="chip" data-q="আমার কাছের আশ্রয়কেন্দ্র কোথায়? আমি আছি কাকদ্বীপ, দক্ষিণ ২৪ পরগনা">🏠 আশ্রয়কেন্দ্র</button>
-      <button class="chip" data-q="প্রচুর রক্ত পড়ছে, কী করব?">🩸 রক্তপাত</button>
-      <button class="chip" data-q="সাপে কামড়েছে, এখন কী করা উচিত?">🐍 সাপে কামড়</button>
-      <button class="chip" data-q="জল ফুটিয়ে খাওয়া ছাড়া আর কীভাবে বিশুদ্ধ করব?">💧 জল বিশুদ্ধ</button>
-      <button class="chip" data-q="Whom should I call once the network is back?">📞 Helplines</button>
-    </div>
-
-    <div class="composer">
+    <form class="composer" id="composer" autocomplete="off">
       <img id="img-preview" class="img-preview hidden" alt="attached photo">
+      <textarea id="input" rows="1" placeholder="বিপদের কথা লিখুন… / Describe the emergency…" aria-label="Message"></textarea>
       <div class="composer-row">
-        <button id="btn-photo" class="icon-btn" title="Attach photo · আঘাত/ক্ষতির ছবি">📷</button>
+        <button type="button" id="btn-photo" class="ghost-key" title="Attach a photo · আঘাত বা ক্ষতির ছবি" aria-label="Attach photo">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M8.5 7 10 5h4l1.5 2H19a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h3.5Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12.5" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
         <input type="file" id="file-input" accept="image/*" capture="environment" hidden>
-        <button id="btn-mic" class="icon-btn" title="Hold to speak · চেপে ধরে বলুন">🎤</button>
-        <textarea id="input" rows="1" placeholder="বিপদের কথা লিখুন… / Describe the emergency…"></textarea>
-        <button id="btn-send" class="send-btn">পাঠান<span class="send-en">SEND</span></button>
-      </div>
-      <p class="composer-note">সবকিছু এই যন্ত্রেই চলছে, ইন্টারনেট লাগে না · runs fully on this device</p>
-    </div>
-  </section>
 
-  <aside class="rail">
-    <section class="rail-card" id="outbox-card">
-      <h2><span class="rail-icon">📡</span> SOS OUTBOX <span class="rail-sub">নেটওয়ার্ক ফিরলেই পাঠানো হবে</span></h2>
-      <div id="outbox-list" class="rail-list">
-        <p class="empty">No SOS queued. বিপদে বললেই আমি বার্তা তৈরি রাখব।</p>
+        <div class="chips" id="quick-row">
+          <button type="button" class="chip" data-q="আমার কাছের আশ্রয়কেন্দ্র কোথায়? আমি আছি কাকদ্বীপ, দক্ষিণ ২৪ পরগনা">আশ্রয়কেন্দ্র</button>
+          <button type="button" class="chip" data-q="প্রচুর রক্ত পড়ছে, কী করব?">রক্তপাত</button>
+          <button type="button" class="chip" data-q="সাপে কামড়েছে, পা ফুলে যাচ্ছে। এখন কী করব?">সাপে কামড়</button>
+          <button type="button" class="chip" data-q="জল ফুটিয়ে খাওয়া ছাড়া আর কীভাবে বিশুদ্ধ করব?">জল বিশুদ্ধ</button>
+          <button type="button" class="chip" data-q="Whom should I call once the network is back?">Helplines</button>
+        </div>
+
+        <button type="button" id="btn-mic" class="round-key" title="Hold to speak · চেপে ধরে বলুন" aria-label="Hold to speak">
+          <span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+          <svg class="mic-ic" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </button>
+        <button type="submit" id="btn-send" class="round-key send" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 20V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
       </div>
-    </section>
-    <section class="rail-card" id="family-card">
-      <h2><span class="rail-icon">👪</span> FAMILY BOARD <span class="rail-sub">কে কোথায়, কেমন আছে</span></h2>
-      <div id="family-list" class="rail-list">
-        <p class="empty">Report someone safe or missing and it appears here.</p>
-      </div>
-    </section>
-    <section class="rail-card" id="shelter-card">
-      <h2><span class="rail-icon">🏠</span> SHELTERS <span class="rail-sub">অফলাইন তালিকা</span></h2>
-      <div id="shelter-list" class="rail-list">
-        <p class="empty">Ask "nearest shelter" with your area.</p>
-      </div>
-    </section>
-  </aside>
-</main>
+    </form>
+
+    <p class="disclaimer">
+      SAHAY gives first-aid guidance and always points to 112 / 108 when a network returns. It is a companion, not a doctor.
+    </p>
+  </main>
+</div>
 
 <template id="tpl-tool-chip">
   <div class="tool-chip">
-    <span class="tool-gear">⚙</span>
+    <span class="tool-gear" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2M12 19.5v2M4.2 7l1.7 1M18.1 16l1.7 1M4.2 17l1.7-1M18.1 8l1.7-1M2.5 12h2M19.5 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </span>
     <code class="tool-code"></code>
     <span class="tool-status">executed locally</span>
   </div>

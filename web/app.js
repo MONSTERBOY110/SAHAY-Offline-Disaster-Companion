@@ -2,6 +2,7 @@
 
 const chatEl = document.getElementById("chat");
 const inputEl = document.getElementById("input");
+const composerEl = document.getElementById("composer");
 const sendBtn = document.getElementById("btn-send");
 const micBtn = document.getElementById("btn-mic");
 const photoBtn = document.getElementById("btn-photo");
@@ -9,7 +10,7 @@ const fileInput = document.getElementById("file-input");
 const imgPreview = document.getElementById("img-preview");
 const toolChipTpl = document.getElementById("tpl-tool-chip");
 
-let history = [];          // [{role, content}] for model context
+let history = [];
 let pendingImageB64 = null;
 let mediaRecorder = null;
 let audioChunks = [];
@@ -18,52 +19,63 @@ let busy = false;
 /* ---------------------------------------------------------------- status */
 async function refreshStatus() {
   try {
-    const r = await fetch("/api/status");
-    const s = await r.json();
-    const netLight = document.getElementById("net-light");
+    const s = await (await fetch("/api/status")).json();
+    const net = document.getElementById("net-readout");
     const netState = document.getElementById("net-state");
     if (s.online) {
-      netLight.classList.add("online");
+      net.dataset.state = "up";
       netState.textContent = "ONLINE";
     } else {
-      netLight.classList.remove("online");
+      net.dataset.state = "down";
       netState.textContent = "DEAD";
     }
     document.getElementById("gemma-state").textContent =
       s.model_ready ? "ALIVE · LOCAL" : "LOADING…";
   } catch {
-    /* backend unreachable; leave as-is */
+    const net = document.getElementById("net-readout");
+    if (net) net.dataset.state = "down";
   }
 }
 refreshStatus();
 setInterval(refreshStatus, 5000);
 
 /* ------------------------------------------------------------- rendering */
+const USER_AV = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.7"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+
 function addMsg(role, html, opts = {}) {
   const wrap = document.createElement("div");
   wrap.className = `msg ${role}`;
-  const body = document.createElement("div");
-  body.className = "msg-body";
-  body.lang = "bn";
+  const av = document.createElement("span");
+  av.setAttribute("aria-hidden", "true");
+  if (role === "user") { av.className = "avatar av-user"; av.innerHTML = USER_AV; }
+  else { av.className = "avatar av-sahay"; av.textContent = "স"; }
+  wrap.appendChild(av);
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.lang = "bn";
   if (opts.photoSrc) {
     const img = document.createElement("img");
     img.src = opts.photoSrc;
     img.alt = "attached photo";
     img.className = "sent-photo";
-    body.appendChild(img);
+    bubble.appendChild(img);
   }
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  body.appendChild(div);
-  wrap.appendChild(body);
+  const content = document.createElement("div");
+  content.innerHTML = html;
+  bubble.appendChild(content);
+
+  const col = document.createElement("div");
+  col.className = "msg-col";
+  col.appendChild(bubble);
   if (opts.transcript) {
     const t = document.createElement("p");
     t.className = "transcript-tag";
     t.textContent = `🎤 ${opts.transcript}`;
-    wrap.appendChild(t);
+    col.appendChild(t);
   }
+  wrap.appendChild(col);
   chatEl.appendChild(wrap);
-  chatEl.scrollTop = chatEl.scrollHeight;
+  scrollDown();
   return wrap;
 }
 
@@ -71,25 +83,29 @@ function addToolChip(ev) {
   const chip = toolChipTpl.content.cloneNode(true);
   const argStr = JSON.stringify(ev.args);
   chip.querySelector(".tool-code").textContent =
-    `${ev.tool}(${argStr.length > 90 ? argStr.slice(0, 90) + "…" : argStr})`;
+    `${ev.tool}(${argStr.length > 88 ? argStr.slice(0, 88) + "…" : argStr})`;
   chatEl.appendChild(chip);
-  chatEl.scrollTop = chatEl.scrollHeight;
+  scrollDown();
 }
 
 function addTyping() {
   const wrap = document.createElement("div");
-  wrap.className = "msg sahay typing-wrap";
+  wrap.className = "msg sahay typing";
   wrap.innerHTML =
-    '<div class="msg-body typing"><i></i><i></i><i></i></div>';
+    '<span class="avatar av-sahay" aria-hidden="true">স</span>' +
+    '<div class="bubble"><i></i><i></i><i></i></div>';
   chatEl.appendChild(wrap);
-  chatEl.scrollTop = chatEl.scrollHeight;
+  scrollDown();
   return wrap;
 }
 
-/* Minimal safe markdown: bold, lists, line breaks. */
+function scrollDown() {
+  chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: "smooth" });
+}
+
+/* Minimal safe markdown: bold, ordered/unordered lists, paragraphs. */
 function md(text) {
-  const esc = text
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const esc = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const lines = esc.split(/\r?\n/);
   let html = "", inList = false;
   for (const line of lines) {
@@ -120,16 +136,12 @@ async function send({ text = "", audioB64 = null } = {}) {
     photoSrc: pendingImageB64 ? `data:image/jpeg;base64,${pendingImageB64}` : null,
   });
 
-  const payload = {
-    message,
-    image_b64: pendingImageB64,
-    audio_b64: audioB64,
-    history,
-  };
+  const payload = { message, image_b64: pendingImageB64, audio_b64: audioB64, history };
   pendingImageB64 = null;
   imgPreview.classList.add("hidden");
   photoBtn.classList.remove("has-photo");
   inputEl.value = "";
+  autosize();
 
   const typing = addTyping();
   try {
@@ -152,11 +164,10 @@ async function send({ text = "", audioB64 = null } = {}) {
     if (history.length > 12) history = history.slice(-12);
 
     refreshRail();
-  } catch (err) {
+  } catch {
     typing.remove();
-    addMsg("sahay",
-      md("**সংযোগে সমস্যা হয়েছে।** Backend unreachable, retry in a moment.\n" +
-         "Check that the SAHAY server and Ollama are running."));
+    addMsg("sahay", md("**সংযোগে সমস্যা।** Backend unreachable, retry in a moment.\n" +
+      "Check that the SAHAY server and Ollama are running."));
   } finally {
     busy = false;
     sendBtn.disabled = false;
@@ -164,17 +175,27 @@ async function send({ text = "", audioB64 = null } = {}) {
   }
 }
 
-sendBtn.addEventListener("click", () => send({ text: inputEl.value }));
+composerEl.addEventListener("submit", (e) => {
+  e.preventDefault();
+  send({ text: inputEl.value });
+});
 inputEl.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
-    send({ text: inputEl.value });
+    composerEl.requestSubmit();
   }
 });
 document.getElementById("quick-row").addEventListener("click", (e) => {
   const chip = e.target.closest(".chip");
   if (chip) send({ text: chip.dataset.q });
 });
+
+/* textarea autosize */
+function autosize() {
+  inputEl.style.height = "auto";
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 132) + "px";
+}
+inputEl.addEventListener("input", autosize);
 
 /* ----------------------------------------------------------------- photo */
 photoBtn.addEventListener("click", () => fileInput.click());
@@ -202,9 +223,8 @@ async function startRecording() {
     mediaRecorder.onstop = async () => {
       stream.getTracks().forEach((t) => t.stop());
       const blob = new Blob(audioChunks, { type: "audio/webm" });
-      if (blob.size < 2000) return; // accidental tap
-      const b64 = await blobToB64(blob);
-      send({ text: inputEl.value, audioB64: b64 });
+      if (blob.size < 2000) return;
+      send({ text: inputEl.value, audioB64: await blobToB64(blob) });
     };
     mediaRecorder.start();
     micBtn.classList.add("recording");
@@ -223,7 +243,6 @@ function blobToB64(blob) {
     r.readAsDataURL(blob);
   });
 }
-/* hold-to-talk on mouse + touch, click-toggle fallback */
 micBtn.addEventListener("mousedown", startRecording);
 micBtn.addEventListener("mouseup", stopRecording);
 micBtn.addEventListener("mouseleave", stopRecording);
@@ -239,7 +258,7 @@ async function refreshRail() {
     ]);
     renderOutbox(ob.outbox || []);
     renderFamily(fam.family || []);
-  } catch { /* backend hiccup; rail keeps last state */ }
+  } catch { /* keep last state */ }
 }
 
 function renderOutbox(items) {
@@ -272,10 +291,10 @@ function renderFamily(items) {
   }
 }
 
-/* Shelter cards come from tool events; also allow direct render. */
-const origAddToolChip = addToolChip;
+/* shelter cards render from find_nearest_shelter tool events */
+const _addToolChip = addToolChip;
 addToolChip = function (ev) {
-  origAddToolChip(ev);
+  _addToolChip(ev);
   if (ev.tool === "find_nearest_shelter" && ev.result && ev.result.shelters) {
     renderShelters(ev.result.shelters);
   }
