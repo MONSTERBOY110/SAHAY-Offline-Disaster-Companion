@@ -34,13 +34,17 @@ WEB_DIR = ROOT / "web"
 MAX_TOOL_ROUNDS = 4
 
 
-def ollama_chat(model: str, messages: list[dict], use_tools: bool = True) -> dict:
+def ollama_chat(model: str, messages: list[dict], use_tools: bool = True,
+                num_predict: int | None = None) -> dict:
     """Raw REST call to Ollama, full control over message fields."""
+    options = {"temperature": 0.3}
+    if num_predict:
+        options["num_predict"] = num_predict
     payload = {
         "model": model,
         "messages": messages,
         "stream": False,
-        "options": {"temperature": 0.3},
+        "options": options,
         "keep_alive": -1,
     }
     if use_tools:
@@ -52,6 +56,30 @@ def ollama_chat(model: str, messages: list[dict], use_tools: bool = True) -> dic
     )
     with urllib.request.urlopen(req, timeout=600) as r:
         return json.loads(r.read())
+
+
+def _downscale_image_b64(b64: str, max_dim: int = 768) -> str:
+    """Shrink a data image so the vision model isn't fed a multi-megapixel photo.
+
+    A phone photo can be 4000px wide; on a 6 GB GPU the 12B vision model then
+    spills to CPU and takes minutes. Capping the long edge keeps the demo fast
+    while staying more than legible for reading a label or a wound. Best-effort:
+    if Pillow is missing or decoding fails, the original image is used.
+    """
+    try:
+        from PIL import Image  # type: ignore
+        import io
+        raw = base64.b64decode(b64)
+        img = Image.open(io.BytesIO(raw))
+        img = img.convert("RGB")
+        if max(img.size) > max_dim:
+            scale = max_dim / max(img.size)
+            img = img.resize((round(img.width * scale), round(img.height * scale)))
+        out = io.BytesIO()
+        img.save(out, format="JPEG", quality=85)
+        return base64.b64encode(out.getvalue()).decode()
+    except Exception:
+        return b64
 
 SYSTEM_PROMPT = """\
 You are SAHAY (সহায়), a calm, reliable disaster-response companion for people in \
@@ -181,10 +209,11 @@ def chat(req: ChatRequest):
 
     user_msg: dict = {"role": "user", "content": user_text or "(see attached image)"}
     if req.image_b64:
-        user_msg["images"] = [req.image_b64]
+        user_msg["images"] = [_downscale_image_b64(req.image_b64)]
     messages.append(user_msg)
 
     # --- native function-calling loop -------------------------------------
+    # Vision runs on the larger 12B model (E4B image input is broken upstream).
     model = VISION_MODEL if req.image_b64 else MODEL
     reply = ""
     for _round in range(MAX_TOOL_ROUNDS):
