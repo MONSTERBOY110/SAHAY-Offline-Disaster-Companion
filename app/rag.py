@@ -17,10 +17,24 @@ KNOWLEDGE_DIR = Path(__file__).resolve().parent.parent / "knowledge"
 
 # Word chars incl. Bengali block (U+0980–U+09FF)
 _TOKEN_RE = re.compile(r"[A-Za-z0-9ঀ-৿]+")
+_BENGALI = re.compile(r"[ঀ-৿]")
 
 
 def _tokenize(text: str) -> list[str]:
-    return [t.lower() for t in _TOKEN_RE.findall(text)]
+    """Word tokens, plus character trigrams for Bengali words.
+
+    Bengali is agglutinative, so a query word like রক্ত rarely matches a chunk
+    word like রক্তক্ষরণ on the whole-word level. Emitting character trigrams for
+    Bengali tokens lets those compounds share terms, which is what makes offline
+    retrieval actually recall the right first-aid passage.
+    """
+    tokens: list[str] = []
+    for raw in _TOKEN_RE.findall(text):
+        t = raw.lower()
+        tokens.append(t)
+        if len(t) >= 4 and _BENGALI.search(t):
+            tokens.extend(t[i:i + 3] for i in range(len(t) - 2))
+    return tokens
 
 
 @dataclass
