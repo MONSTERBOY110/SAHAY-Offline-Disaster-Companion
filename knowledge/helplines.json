@@ -1,0 +1,50 @@
+[
+  {
+    "name": "National Emergency Number (Police / Fire / Ambulance)",
+    "name_bn": "জাতীয় জরুরি নম্বর (পুলিশ / দমকল / অ্যাম্বুলেন্স)",
+    "number": "112",
+    "scope": "All-in-one national emergency number, pan-India"
+  },
+  {
+    "name": "Ambulance",
+    "name_bn": "অ্যাম্বুলেন্স",
+    "number": "108",
+    "scope": "Emergency ambulance service, pan-India"
+  },
+  {
+    "name": "Fire Brigade",
+    "name_bn": "দমকল",
+    "number": "101",
+    "scope": "Fire and rescue services, pan-India"
+  },
+  {
+    "name": "Police",
+    "name_bn": "পুলিশ",
+    "number": "100",
+    "scope": "Police emergency, pan-India"
+  },
+  {
+    "name": "West Bengal State Disaster Management Helpline",
+    "name_bn": "পশ্চিমবঙ্গ রাজ্য বিপর্যয় মোকাবিলা হেল্পলাইন",
+    "number": "1070",
+    "scope": "State Emergency Operations Centre, West Bengal"
+  },
+  {
+    "name": "District Disaster Management Helpline",
+    "name_bn": "জেলা বিপর্যয় মোকাবিলা হেল্পলাইন",
+    "number": "1077",
+    "scope": "District Emergency Operations Centre / control room, per district"
+  },
+  {
+    "name": "West Bengal Health Helpline",
+    "name_bn": "পশ্চিমবঙ্গ স্বাস্থ্য হেল্পলাইন",
+    "number": "104",
+    "scope": "Health advice and medical information, West Bengal"
+  },
+  {
+    "name": "Childline (children in distress)",
+    "name_bn": "চাইল্ডলাইন (বিপদে পড়া শিশুদের জন্য)",
+    "number": "1098",
+    "scope": "Missing, separated, or distressed children, pan-India"
+  }
+]

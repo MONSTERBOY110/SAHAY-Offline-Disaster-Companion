@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+node_modules/
+.env
+*.log
+data/outbox.json
+data/family.json
+.playwright-mcp/

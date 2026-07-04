@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>সহায় SAHAY · offline disaster companion</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b1220'/%3E%3Ccircle cx='50' cy='50' r='26' fill='none' stroke='%23ff6b2c' stroke-width='9'/%3E%3Ccircle cx='50' cy='50' r='7' fill='%2337d67a'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<header class="truthbar">
+  <div class="brand">
+    <span class="brand-bn">সহায়</span>
+    <span class="brand-en">SAHAY · offline disaster companion</span>
+  </div>
+  <div class="lights">
+    <div class="light" id="net-light">
+      <span class="dot dot-red"></span>
+      <span class="light-label">NETWORK <b id="net-state">CHECKING…</b></span>
+    </div>
+    <div class="light" id="gemma-light">
+      <span class="dot dot-green"></span>
+      <span class="light-label">GEMMA 4 <b id="gemma-state">LOCAL</b></span>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="chat-pane">
+    <div class="chat-scroll" id="chat">
+      <div class="msg sahay">
+        <div class="msg-body">
+          <p><strong>আমি সহায়। নেটওয়ার্ক না থাকলেও আমি আছি।</strong></p>
+          <p>বিপদে বলুন বা লিখুন, বাংলা বা English। ছবি তুলে পাঠান (আঘাত, ওষুধ, ক্ষয়ক্ষতি)। আমি প্রাথমিক চিকিৎসা বলব, আশ্রয়কেন্দ্র খুঁজব, SOS বার্তা তৈরি রাখব।</p>
+          <p class="dim">I'm SAHAY, here even when the network is not. Speak or type in Bengali or English. Share a photo of an injury, medicine, or damage.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-row" id="quick-row">
+      <button class="chip" data-q="আমার কাছের আশ্রয়কেন্দ্র কোথায়? আমি আছি কাকদ্বীপ, দক্ষিণ ২৪ পরগনা">🏠 আশ্রয়কেন্দ্র</button>
+      <button class="chip" data-q="প্রচুর রক্ত পড়ছে, কী করব?">🩸 রক্তপাত</button>
+      <button class="chip" data-q="সাপে কামড়েছে, এখন কী করা উচিত?">🐍 সাপে কামড়</button>
+      <button class="chip" data-q="জল ফুটিয়ে খাওয়া ছাড়া আর কীভাবে বিশুদ্ধ করব?">💧 জল বিশুদ্ধ</button>
+      <button class="chip" data-q="Whom should I call once the network is back?">📞 Helplines</button>
+    </div>
+
+    <div class="composer">
+      <img id="img-preview" class="img-preview hidden" alt="attached photo">
+      <div class="composer-row">
+        <button id="btn-photo" class="icon-btn" title="Attach photo · আঘাত/ক্ষতির ছবি">📷</button>
+        <input type="file" id="file-input" accept="image/*" capture="environment" hidden>
+        <button id="btn-mic" class="icon-btn" title="Hold to speak · চেপে ধরে বলুন">🎤</button>
+        <textarea id="input" rows="1" placeholder="বিপদের কথা লিখুন… / Describe the emergency…"></textarea>
+        <button id="btn-send" class="send-btn">পাঠান<span class="send-en">SEND</span></button>
+      </div>
+      <p class="composer-note">সবকিছু এই যন্ত্রেই চলছে, ইন্টারনেট লাগে না · runs fully on this device</p>
+    </div>
+  </section>
+
+  <aside class="rail">
+    <section class="rail-card" id="outbox-card">
+      <h2><span class="rail-icon">📡</span> SOS OUTBOX <span class="rail-sub">নেটওয়ার্ক ফিরলেই পাঠানো হবে</span></h2>
+      <div id="outbox-list" class="rail-list">
+        <p class="empty">No SOS queued. বিপদে বললেই আমি বার্তা তৈরি রাখব।</p>
+      </div>
+    </section>
+    <section class="rail-card" id="family-card">
+      <h2><span class="rail-icon">👪</span> FAMILY BOARD <span class="rail-sub">কে কোথায়, কেমন আছে</span></h2>
+      <div id="family-list" class="rail-list">
+        <p class="empty">Report someone safe or missing and it appears here.</p>
+      </div>
+    </section>
+    <section class="rail-card" id="shelter-card">
+      <h2><span class="rail-icon">🏠</span> SHELTERS <span class="rail-sub">অফলাইন তালিকা</span></h2>
+      <div id="shelter-list" class="rail-list">
+        <p class="empty">Ask "nearest shelter" with your area.</p>
+      </div>
+    </section>
+  </aside>
+</main>
+
+<template id="tpl-tool-chip">
+  <div class="tool-chip">
+    <span class="tool-gear">⚙</span>
+    <code class="tool-code"></code>
+    <span class="tool-status">executed locally</span>
+  </div>
+</template>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
